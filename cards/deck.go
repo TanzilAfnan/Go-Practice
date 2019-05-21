@@ -1,6 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"strings"
+	"time"
+)
 
 type deck []string
 
@@ -30,34 +37,33 @@ func deal(d deck, handSize int) (deck, deck) {
 	return d[:handSize], d[handSize:]
 }
 
-func (d deck) toString() string{
+func (d deck) toString() string {
 
+	return strings.Join([]string(d), ",")
 }
 
-// import "fmt"
+func (d deck) saveToFile(fileName string) error {
+	return ioutil.WriteFile(fileName, []byte(d.toString()), 0666)
+}
 
-// type deck []string
+func newDeckFromFile(fileName string) deck {
+	bs, err := ioutil.ReadFile(fileName)
 
-// func newDeck() deck {
-// 	cards := deck{}
+	if err != nil {
+		fmt.Println("Error", err)
+		os.Exit(1)
+	}
+	ss := strings.Split(string(bs), ",")
+	// fmt.Println(ss)
+	return deck(ss)
 
-// 	cardSuits := []string{"Spades", "Diamonds", "Hearts", "Clubs"}
-// 	cardValues := []string{"Ace", "Two", "Three", "Four", "Five",
-// 		"Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"}
+}
+func (d deck) shuffle() {
 
-// 	for _, Suit := range cardSuits {
-// 		for _, Value := range cardValues {
-// 			cards = append(cards, Suit+" of "+Value)
-// 		}
-// 	}
-
-// 	return cards
-// }
-
-// func (d deck) print() {
-
-// 	for i, card := range d {
-// 		fmt.Println(i, card)
-// 	}
-
-// }
+	src := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(src)
+	for i := range d {
+		newPosition := r.Intn(len(d) - 1)
+		d[i], d[newPosition] = d[newPosition], d[i]
+	}
+}
